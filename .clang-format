@@ -56,4 +56,5 @@ SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 8
 CommentPragmas:  '^ IWYU pragma:'
 SpaceBeforeParens: ControlStatements
+SortIncludes: false
 ...
