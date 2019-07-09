@@ -294,8 +294,8 @@ void Session::Impl::SetLowSpeed(const LowSpeed& low_speed) {
 void Session::Impl::SetVerifySsl(const VerifySsl& verify) {
     auto curl = curl_->handle;
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verify ? 1L : 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, verify ? 2L : 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verify.GetVerifyPeer() ? 1L : 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, verify.GetVerifyHost() ? 2L : 0L);
     }
 }
 

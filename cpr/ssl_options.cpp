@@ -1,11 +1,18 @@
 #include "cpr/ssl_options.h"
 
-namespace cpr {
+using namespace cpr;
 
-VerifySsl::VerifySsl(bool verify) : verify_{verify} {}
+VerifySsl::VerifySsl(bool verifyPeer, bool verifyHost)
+        : verifyPeer_{verifyPeer}, verifyHost_{verifyHost} {}
 
-VerifySsl::operator bool() const {
-    return verify_;
+bool VerifySsl::GetVerifyPeer() const {
+    return verifyPeer_;
 }
 
-} // namespace cpr
+bool VerifySsl::GetVerifyHost() const {
+    return verifyHost_;
+}
+
+VerifySsl::operator bool() const {
+    return verifyPeer_ && verifyHost_;
+}
