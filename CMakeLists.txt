@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.0.2)
 
 if(POLICY CMP0048)
     # cmake warns if loaded from a min-3.0-required parent dir, so silence the warning:
@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
 project(cpr CXX)
 
-if(NOT ${CMAKE_VERSION} LESS 3.2)
+if(${CMAKE_VERSION} VERSION_GREATER "3.1.3")
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 else()
