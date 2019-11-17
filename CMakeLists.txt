@@ -113,6 +113,13 @@ endif()
 add_subdirectory(thirdparty)
 add_subdirectory(cpr)
 
+# Build examples
+if(CPR_BUILD_EXAMPLES)
+    message(STATUS)
+    message(STATUS "Configure examples:")
+    add_subdirectory(examples)
+endif()
+
 # Build tests
 if(CPR_BUILD_TESTS)
     message(STATUS)
