@@ -1,7 +1,10 @@
-message(STATUS "Using CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}.")
+message(STATUS "")
+message(STATUS "Building CPR library:")
+message(STATUS "Using CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}")
+message(STATUS "Using CPR_LIBRARIES: ${CPR_LIBRARIES}")
 
-add_library(${CPR_LIBRARIES}
 
+set(CPR_SOURCES
     # Source files
     auth.cpp
     cookies.cpp
@@ -39,9 +42,13 @@ add_library(${CPR_LIBRARIES}
     "${CPR_INCLUDE_DIRS}/cpr/util.h"
     "${CPR_INCLUDE_DIRS}/cpr/ssl_options.h")
 
-message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
-target_link_libraries(${CPR_LIBRARIES}
-    ${CURL_LIBRARIES})
+if(${CPR_BUILD_STATIC})
+    add_library(${CPR_LIBRARIES} STATIC ${CPR_SOURCES})
+else()
+    add_library(${CPR_LIBRARIES} SHARED ${CPR_SOURCES})
+endif()
+
+target_link_libraries(${CPR_LIBRARIES} ${CURL_LIBRARIES})
 
 if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
     target_include_directories(${CPR_LIBRARIES}

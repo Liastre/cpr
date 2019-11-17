@@ -7,23 +7,20 @@ target_link_libraries(${TEST_SERVER_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT})
 
 macro(add_cpr_test _TEST_NAME)
-    add_executable(${_TEST_NAME}_tests
+    set(TEST_PROJECT_NAME test_${_TEST_NAME})
+    add_executable(${TEST_PROJECT_NAME}
         ${_TEST_NAME}_tests.cpp)
-    target_link_libraries(${_TEST_NAME}_tests
+    target_link_libraries(${TEST_PROJECT_NAME}
         ${TEST_SERVER_LIBRARY}
         ${GTEST_LIBRARIES}
         ${CPR_LIBRARIES})
-    add_test(NAME cpr_${_TEST_NAME}_tests COMMAND ${_TEST_NAME}_tests)
+    add_test(NAME cpr_${TEST_PROJECT_NAME} COMMAND ${TEST_PROJECT_NAME})
     # Group under the "tests" project folder in IDEs such as Visual Studio.
-    set_property(TARGET ${_TEST_NAME}_tests PROPERTY FOLDER "tests")
+    set_property(TARGET ${TEST_PROJECT_NAME} PROPERTY FOLDER "tests")
     if(WIN32)
-        set(LIBCURL_DLL_NAME "libcurl.dll")
-        if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-            set(LIBCURL_DLL_NAME "libcurl-d.dll")
-        endif()
-        add_custom_command(TARGET ${_TEST_NAME}_tests POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy
-                                $<TARGET_FILE_DIR:libcurl>/${LIBCURL_DLL_NAME} $<TARGET_FILE_DIR:${_TEST_NAME}_tests>)
+        add_custom_command(TARGET ${TEST_PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${CPR_DEPENDENCIES} $<TARGET_FILE_DIR:${TEST_PROJECT_NAME}>)
     endif()
 endmacro()
 

@@ -65,22 +65,58 @@ endmacro()
 
 message(STATUS "C++ Requests CMake Options")
 message(STATUS "=======================================================")
-cpr_option(USE_SYSTEM_CURL
+cpr_option(CPR_BUILD_STATIC
+    "Build CPR as static library" ON)
+cpr_option(CPR_BUILD_TESTS
+    "Set to ON to build cpr tests." ON)
+cpr_option(CPR_BUILD_EXAMPLES
+    "Build CPR code samples" ON)
+cpr_option(CPR_GENERATE_COVERAGE
+    "Set to ON to generate coverage reports." OFF)
+cpr_option(CPR_CURL_NOSIGNAL
+    "Set to ON to disable use of signals in libcurl." OFF)
+cpr_option(CPR_CURL_SYSTEM_ONLY
     "If ON, this project will look in the system paths for an installed curl library" OFF)
-cpr_option(BUILD_CPR_TESTS "Set to ON to build cpr tests." ON)
-cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
-cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
-cpr_option(USE_SYSTEM_GTEST
-    "If ON, this project will look in the system paths for an installed gtest library" OFF)
-cpr_option(CMAKE_USE_OPENSSL "Use OpenSSL code. Experimental" ON)
 message(STATUS "=======================================================")
 
-if(BUILD_CPR_TESTS)
-    enable_testing()
+
+# Code coverage and tests
+if(CPR_BUILD_TESTS AND CPR_GENERATE_COVERAGE)
+    set(CMAKE_BUILD_TYPE COVERAGE CACHE INTERNAL "Coverage enabled build")
+    message(STATUS "Enabling gcov support")
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(COVERAGE_FLAG "--coverage")
+    endif()
+    set(CMAKE_CXX_FLAGS_COVERAGE
+        "-g -O0 ${COVERAGE_FLAG} -fprofile-arcs -ftest-coverage"
+        CACHE STRING "Flags used by the C++ compiler during coverage builds."
+        FORCE)
+    set(CMAKE_C_FLAGS_COVERAGE
+        "-g -O0 ${COVERAGE_FLAG} -fprofile-arcs -ftest-coverage"
+        CACHE STRING "Flags used by the C compiler during coverage builds."
+        FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
+        ""
+        CACHE STRING "Flags used for linking binaries during coverage builds."
+        FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+        ""
+        CACHE STRING "Flags used by the shared libraries linker during coverage builds."
+        FORCE)
+    mark_as_advanced(
+        CMAKE_CXX_FLAGS_COVERAGE
+        CMAKE_C_FLAGS_COVERAGE
+        CMAKE_EXE_LINKER_FLAGS_COVERAGE
+        CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
 endif()
 
-add_subdirectory(opt)
+add_subdirectory(thirdparty)
 add_subdirectory(cpr)
-if(BUILD_CPR_TESTS)
+
+# Build tests
+if(CPR_BUILD_TESTS)
+    message(STATUS)
+    message(STATUS "Configure tests:")
+    enable_testing()
     add_subdirectory(test)
 endif()
