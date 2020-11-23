@@ -1,12 +1,12 @@
-message(STATUS "Using CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}.")
+cmake_minimum_required(VERSION 3.15)
 
-add_library(${CPR_LIBRARIES}
-
-    # Source files
+add_library(cpr
     auth.cpp
+    bearer.cpp
     cookies.cpp
     cprtypes.cpp
-    digest.cpp
+    curl_container.cpp
+    curlholder.cpp
     error.cpp
     multipart.cpp
     parameters.cpp
@@ -14,42 +14,19 @@ add_library(${CPR_LIBRARIES}
     proxies.cpp
     session.cpp
     timeout.cpp
+    unix_socket.cpp
     util.cpp
-    ssl_options.cpp
+    response.cpp
+    )
 
-    # Header files (useful in IDEs)
-    "${CPR_INCLUDE_DIRS}/cpr/api.h"
-    "${CPR_INCLUDE_DIRS}/cpr/auth.h"
-    "${CPR_INCLUDE_DIRS}/cpr/body.h"
-    "${CPR_INCLUDE_DIRS}/cpr/cookies.h"
-    "${CPR_INCLUDE_DIRS}/cpr/cpr.h"
-    "${CPR_INCLUDE_DIRS}/cpr/cprtypes.h"
-    "${CPR_INCLUDE_DIRS}/cpr/curlholder.h"
-    "${CPR_INCLUDE_DIRS}/cpr/defines.h"
-    "${CPR_INCLUDE_DIRS}/cpr/digest.h"
-    "${CPR_INCLUDE_DIRS}/cpr/error.h"
-    "${CPR_INCLUDE_DIRS}/cpr/max_redirects.h"
-    "${CPR_INCLUDE_DIRS}/cpr/multipart.h"
-    "${CPR_INCLUDE_DIRS}/cpr/parameters.h"
-    "${CPR_INCLUDE_DIRS}/cpr/payload.h"
-    "${CPR_INCLUDE_DIRS}/cpr/proxies.h"
-    "${CPR_INCLUDE_DIRS}/cpr/response.h"
-    "${CPR_INCLUDE_DIRS}/cpr/session.h"
-    "${CPR_INCLUDE_DIRS}/cpr/timeout.h"
-    "${CPR_INCLUDE_DIRS}/cpr/util.h"
-    "${CPR_INCLUDE_DIRS}/cpr/ssl_options.h")
+add_library(cpr::cpr ALIAS cpr)
 
-message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
-target_link_libraries(${CPR_LIBRARIES}
-    ${CURL_LIBRARIES})
+target_link_libraries(cpr PUBLIC CURL::libcurl) # todo should be private, but first dependencys in ssl_options need to be removed
 
-if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
-    target_include_directories(${CPR_LIBRARIES}
-        PUBLIC
-        ${CPR_INCLUDE_DIRS}
-        ${CURL_INCLUDE_DIRS})
-else()
-    include_directories(
-        ${CPR_INCLUDE_DIRS}
-        ${CURL_INCLUDE_DIRS})
-endif()
+# Set version for shared libraries.
+set_target_properties(cpr
+     PROPERTIES
+     VERSION ${${PROJECT_NAME}_VERSION}
+     SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR})
+
+install(TARGETS cpr)

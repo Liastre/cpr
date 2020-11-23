@@ -4,20 +4,20 @@
 
 #include <cpr/cpr.h>
 
-#include "server.h"
+#include "httpServer.hpp"
 
 using namespace cpr;
 
-static Server* server = new Server();
-auto base = server->GetBaseUrl();
+static HttpServer* server = new HttpServer();
 
 TEST(PatchTests, PatchTest) {
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
-    auto response = cpr::Patch(url, payload);
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
+    Response response = cpr::Patch(url, payload);
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -26,27 +26,28 @@ TEST(PatchTests, PatchTest) {
 }
 
 TEST(PatchTests, PatchUnallowedTest) {
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
-    auto response = cpr::Patch(url, payload);
-    auto expected_text = std::string{"Method unallowed"};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
+    Response response = cpr::Patch(url, payload);
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
 
 TEST(PatchTests, SessionPatchTest) {
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
     Session session;
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Response response = session.Patch();
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -55,16 +56,16 @@ TEST(PatchTests, SessionPatchTest) {
 }
 
 TEST(PatchTests, SessionPatchUnallowedTest) {
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
     Session session;
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"Method unallowed"};
+    Response response = session.Patch();
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
@@ -72,18 +73,19 @@ TEST(PatchTests, SessionPatchUnallowedTest) {
 TEST(PatchTests, SessionPatchAfterGetTest) {
     Session session;
     {
-        auto url = Url{base + "/get.html"};
+        Url url{server->GetBaseUrl() + "/get.html"};
         session.SetUrl(url);
-        auto response = session.Get();
+        Response response = session.Get();
     }
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Response response = session.Patch();
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -94,19 +96,19 @@ TEST(PatchTests, SessionPatchAfterGetTest) {
 TEST(PatchTests, SessionPatchUnallowedAfterGetTest) {
     Session session;
     {
-        auto url = Url{base + "/get.html"};
+        Url url{server->GetBaseUrl() + "/get.html"};
         session.SetUrl(url);
-        auto response = session.Get();
+        Response response = session.Get();
     }
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"Method unallowed"};
+    Response response = session.Patch();
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
@@ -114,18 +116,19 @@ TEST(PatchTests, SessionPatchUnallowedAfterGetTest) {
 TEST(PatchTests, SessionPatchAfterHeadTest) {
     Session session;
     {
-        auto url = Url{base + "/get.html"};
+        Url url{server->GetBaseUrl() + "/get.html"};
         session.SetUrl(url);
-        auto response = session.Head();
+        Response response = session.Head();
     }
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Response response = session.Patch();
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -136,19 +139,19 @@ TEST(PatchTests, SessionPatchAfterHeadTest) {
 TEST(PatchTests, SessionPatchUnallowedAfterHeadTest) {
     Session session;
     {
-        auto url = Url{base + "/get.html"};
+        Url url{server->GetBaseUrl() + "/get.html"};
         session.SetUrl(url);
-        auto response = session.Head();
+        Response response = session.Head();
     }
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"Method unallowed"};
+    Response response = session.Patch();
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
@@ -156,19 +159,20 @@ TEST(PatchTests, SessionPatchUnallowedAfterHeadTest) {
 TEST(PatchTests, SessionPatchAfterPostTest) {
     Session session;
     {
-        auto url = Url{base + "/url_post.html"};
-        auto payload = Payload{{"x", "5"}};
+        Url url{server->GetBaseUrl() + "/url_post.html"};
+        Payload payload{{"x", "5"}};
         session.SetUrl(url);
-        auto response = session.Post();
+        Response response = session.Post();
     }
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Response response = session.Patch();
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -179,32 +183,33 @@ TEST(PatchTests, SessionPatchAfterPostTest) {
 TEST(PatchTests, SessionPatchUnallowedAfterPostTest) {
     Session session;
     {
-        auto url = Url{base + "/url_post.html"};
-        auto payload = Payload{{"x", "5"}};
+        Url url{server->GetBaseUrl() + "/url_post.html"};
+        Payload payload{{"x", "5"}};
         session.SetUrl(url);
-        auto response = session.Post();
+        Response response = session.Post();
     }
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
     session.SetUrl(url);
     session.SetPayload(payload);
-    auto response = session.Patch();
-    auto expected_text = std::string{"Method unallowed"};
+    Response response = session.Patch();
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
 
 TEST(PatchTests, AsyncPatchTest) {
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
-    auto future_response = cpr::PatchAsync(url, payload);
-    auto response = future_response.get();
-    auto expected_text = std::string{"{\n"
-                                     "  \"x\": 5\n"
-                                     "}"};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
+    cpr::AsyncResponse future_response = cpr::PatchAsync(url, payload);
+    cpr::Response response = future_response.get();
+    std::string expected_text{
+            "{\n"
+            "  \"x\": 5\n"
+            "}"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -213,30 +218,31 @@ TEST(PatchTests, AsyncPatchTest) {
 }
 
 TEST(PatchTests, AsyncPatchUnallowedTest) {
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
-    auto future_response = cpr::PatchAsync(url, payload);
-    auto response = future_response.get();
-    auto expected_text = std::string{"Method unallowed"};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
+    cpr::AsyncResponse future_response = cpr::PatchAsync(url, payload);
+    cpr::Response response = future_response.get();
+    std::string expected_text{"Method Not Allowed"};
     EXPECT_EQ(expected_text, response.text);
     EXPECT_EQ(url, response.url);
-    EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+    EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
     EXPECT_EQ(405, response.status_code);
     EXPECT_EQ(ErrorCode::OK, response.error.code);
 }
 
 TEST(PatchTests, AsyncMultiplePatchTest) {
-    auto url = Url{base + "/patch.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch.html"};
+    Payload payload{{"x", "5"}};
     std::vector<AsyncResponse> responses;
-    for (int i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 10; ++i) {
         responses.emplace_back(cpr::PatchAsync(url, payload));
     }
-    for (auto& future_response : responses) {
-        auto response = future_response.get();
-        auto expected_text = std::string{"{\n"
-                                         "  \"x\": 5\n"
-                                         "}"};
+    for (cpr::AsyncResponse& future_response : responses) {
+        cpr::Response response = future_response.get();
+        std::string expected_text{
+                "{\n"
+                "  \"x\": 5\n"
+                "}"};
         EXPECT_EQ(expected_text, response.text);
         EXPECT_EQ(url, response.url);
         EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
@@ -246,18 +252,18 @@ TEST(PatchTests, AsyncMultiplePatchTest) {
 }
 
 TEST(PatchTests, AsyncMultiplePatchUnallowedTest) {
-    auto url = Url{base + "/patch_unallowed.html"};
-    auto payload = Payload{{"x", "5"}};
+    Url url{server->GetBaseUrl() + "/patch_unallowed.html"};
+    Payload payload{{"x", "5"}};
     std::vector<AsyncResponse> responses;
-    for (int i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 10; ++i) {
         responses.emplace_back(cpr::PatchAsync(url, payload));
     }
-    for (auto& future_response : responses) {
-        auto response = future_response.get();
-        auto expected_text = std::string{"Method unallowed"};
+    for (cpr::AsyncResponse& future_response : responses) {
+        cpr::Response response = future_response.get();
+        std::string expected_text{"Method Not Allowed"};
         EXPECT_EQ(expected_text, response.text);
         EXPECT_EQ(url, response.url);
-        EXPECT_EQ(std::string{"text/html"}, response.header["content-type"]);
+        EXPECT_EQ(std::string{"text/plain"}, response.header["content-type"]);
         EXPECT_EQ(405, response.status_code);
         EXPECT_EQ(ErrorCode::OK, response.error.code);
     }

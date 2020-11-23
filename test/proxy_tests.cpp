@@ -13,8 +13,8 @@
 using namespace cpr;
 
 TEST(ProxyTests, SingleProxyTest) {
-    auto url = Url{"http://www.httpbin.org/get"};
-    auto response = cpr::Get(url, Proxies{{"http", HTTP_PROXY}});
+    Url url{"http://www.httpbin.org/get"};
+    Response response = cpr::Get(url, Proxies{{"http", HTTP_PROXY}});
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -22,9 +22,8 @@ TEST(ProxyTests, SingleProxyTest) {
 }
 
 TEST(ProxyTests, MultipleProxyHttpTest) {
-    auto url = Url{"http://www.httpbin.org/get"};
-    auto response = cpr::Get(url, Proxies{{"http", HTTP_PROXY},
-                                          {"https", HTTPS_PROXY}});
+    Url url{"http://www.httpbin.org/get"};
+    Response response = cpr::Get(url, Proxies{{"http", HTTP_PROXY}, {"https", HTTPS_PROXY}});
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -34,8 +33,8 @@ TEST(ProxyTests, MultipleProxyHttpTest) {
 // TODO: These should be fixed after a source code implementation of an HTTPS proxy
 #if defined(false)
 TEST(ProxyTests, ProxyHttpsTest) {
-    auto url = Url{"https://www.httpbin.org/get"};
-    auto response = cpr::Get(url, Proxies{{"https", HTTPS_PROXY}});
+    Url url{"https://www.httpbin.org/get"};
+    Response response = cpr::Get(url, Proxies{{"https", HTTPS_PROXY}});
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -43,9 +42,8 @@ TEST(ProxyTests, ProxyHttpsTest) {
 }
 
 TEST(ProxyTests, MultipleProxyHttpsTest) {
-    auto url = Url{"https://www.httpbin.org/get"};
-    auto response = cpr::Get(url, Proxies{{"http", HTTP_PROXY},
-                                          {"https", HTTPS_PROXY}});
+    Url url{"https://www.httpbin.org/get"};
+    Response response = cpr::Get(url, Proxies{{"http", HTTP_PROXY}, {"https", HTTPS_PROXY}});
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -54,9 +52,9 @@ TEST(ProxyTests, MultipleProxyHttpsTest) {
 #endif
 
 TEST(ProxyTests, CopyProxyTest) {
-    auto url = Url{"http://www.httpbin.org/get"};
-    auto proxies = Proxies{{"http", HTTP_PROXY}};
-    auto response = cpr::Get(url, proxies);
+    Url url{"http://www.httpbin.org/get"};
+    Proxies proxies{{"http", HTTP_PROXY}};
+    Response response = cpr::Get(url, proxies);
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -64,11 +62,11 @@ TEST(ProxyTests, CopyProxyTest) {
 }
 
 TEST(ProxyTests, ProxySessionTest) {
-    auto url = Url{"http://www.httpbin.org/get"};
+    Url url{"http://www.httpbin.org/get"};
     Session session;
     session.SetUrl(url);
     session.SetProxies(Proxies{{"http", HTTP_PROXY}});
-    auto response = session.Get();
+    Response response = session.Get();
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);
@@ -76,12 +74,12 @@ TEST(ProxyTests, ProxySessionTest) {
 }
 
 TEST(ProxyTests, ReferenceProxySessionTest) {
-    auto url = Url{"http://www.httpbin.org/get"};
-    auto proxies = Proxies{{"http", HTTP_PROXY}};
+    Url url{"http://www.httpbin.org/get"};
+    Proxies proxies{{"http", HTTP_PROXY}};
     Session session;
     session.SetUrl(url);
     session.SetProxies(proxies);
-    auto response = session.Get();
+    Response response = session.Get();
     EXPECT_EQ(url, response.url);
     EXPECT_EQ(std::string{"application/json"}, response.header["content-type"]);
     EXPECT_EQ(200, response.status_code);

@@ -1,6 +1,13 @@
 # C++ Requests: Curl for People <img align="right" height="40" src="http://i.imgur.com/d9Xtyts.png">
 
-[![Build Status](https://travis-ci.org/whoshuu/cpr.svg?branch=master)](https://travis-ci.org/whoshuu/cpr) [![Build status](https://ci.appveyor.com/api/projects/status/imalkp3a6hblpj5y/branch/master?svg=true)](https://ci.appveyor.com/project/whoshuu/cpr/branch/master) [![Coverage Status](https://coveralls.io/repos/whoshuu/cpr/badge.svg?branch=master&service=github)](https://coveralls.io/github/whoshuu/cpr) [![Documentation](https://img.shields.io/badge/documentation-master-brightgreen.svg)](https://whoshuu.github.io/cpr/)
+[![Documentation](https://img.shields.io/badge/docs-online-informational?style=flat&link=https://whoshuu.github.io/cpr/)](https://whoshuu.github.io/cpr/)
+![CI](https://github.com/whoshuu/cpr/workflows/CI/badge.svg)
+
+## Announcements
+
+The cpr project has new maintainers: [Fabian Sauter](https://github.com/com8) and [Tim Stack](https://github.com/tstack).
+
+## TLDR
 
 C++ Requests is a simple wrapper around [libcurl](http://curl.haxx.se/libcurl) inspired by the excellent [Python Requests](https://github.com/kennethreitz/requests) project.
 
@@ -12,7 +19,7 @@ Here's a quick GET request:
 #include <cpr/cpr.h>
 
 int main(int argc, char** argv) {
-    auto r = cpr::Get(cpr::Url{"https://api.github.com/repos/whoshuu/cpr/contributors"},
+    cpr::Response r = cpr::Get(cpr::Url{"https://api.github.com/repos/whoshuu/cpr/contributors"},
                       cpr::Authentication{"user", "pass"},
                       cpr::Parameters{{"anon", "true"}, {"key", "value"}});
     r.status_code;                  // 200
@@ -25,6 +32,7 @@ And here's [less functional, more complicated code, without cpr](https://gist.gi
 
 ## Documentation
 
+[![Documentation](https://img.shields.io/badge/docs-online-informational?style=for-the-badge&link=https://whoshuu.github.io/cpr/)](https://whoshuu.github.io/cpr/)  
 You can find the latest documentation [here](https://whoshuu.github.io/cpr). It's a work in progress, but it should give you a better idea of how to use the library than the [tests](https://github.com/whoshuu/cpr/tree/master/test) currently do.
 
 ## Features
@@ -37,60 +45,97 @@ C++ Requests currently supports:
 * Multipart form POST upload
 * File POST upload
 * Basic authentication
+* Bearer authentication
 * Digest authentication
-* Timeout specification
+* NTLM authentication
+* Connection and request timeout specification
 * Timeout for low speed connection
 * Asynchronous requests
 * :cookie: support!
 * Proxy support
-* Callback interface
+* Callback interfaces
 * PUT methods
 * DELETE methods
 * HEAD methods
 * OPTIONS methods
 * PATCH methods
+* Thread Safe access to [libCurl](https://curl.haxx.se/libcurl/c/threadsafe.html)
+* OpenSSL and WinSSL support for HTTPS requests
 
 ## Planned
 
-Support for the following will be forthcoming (in rough order of implementation priority):
-
-* [Streamed requests](https://github.com/whoshuu/cpr/issues/25)
-* [OpenSSL support](https://github.com/whoshuu/cpr/issues/31)
-
-and much more!
+For a quick overview about the planed features, have a look at the next [Milestones](https://github.com/whoshuu/cpr/milestones).
 
 ## Usage
 
-For just getting this library up and running, I highly recommend forking the [example project](https://github.com/whoshuu/cpr-example). It's configured with the minimum CMake magic and boilerplate needed to start playing around with networked applications.
+If you already have a project you need to integrate C++ Requests with, the primary way is to use CMake `fetch_content`.
+Add the following to your `CMakeLists.txt`.
 
-If you already have a project you need to integrate C++ Requests with, the primary way is to use git submodules. Add this repository as a submodule of your root repository:
-
-```shell
-git submodule add git@github.com:whoshuu/cpr.git
-OR 
-git submodule add https://github.com/whoshuu/cpr.git
-
-git submodule update --init --recursive
-```
-
-Next, add this subdirectory to your CMakeLists.txt before declaring any targets that might use it:
 
 ```cmake
-add_subdirectory(cpr)
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/whoshuu/cpr.git GIT_TAG c8d33915dbd88ad6c92b258869b03aba06587ff9) # the commit hash for 1.5.0
+FetchContent_MakeAvailable(cpr)
 ```
 
-This will produce two important CMake variables, `CPR_INCLUDE_DIRS` and `CPR_LIBRARIES`, which you'll use in the typical way:
+This will produce the target `cpr::cpr` which you can link against the typical way:
 
 ```cmake
-include_directories(${CPR_INCLUDE_DIRS})
-target_link_libraries(your_target_name ${CPR_LIBRARIES})
+target_link_libraries(your_target_name PRIVATE cpr::cpr)
 ```
 
-and that should do it! Using the submodule method of integrating C++ Requests, there's no need to handle libcurl yourself, all of those dependencies are taken care of for you.
+That should do it!
+There's no need to handle `libcurl` yourself. All dependencies are taken care of for you.
 
 ## Requirements
 
 The only explicit requirements are:
 
-* a C++11 compatible compiler such as Clang or GCC. The minimum required version of GCC is unknown, so if anyone has trouble building this library with a specific version of GCC, do let me know
-* curl and its development libraries
+* a `C++11` compatible compiler such as Clang or GCC. The minimum required version of GCC is unknown, so if anyone has trouble building this library with a specific version of GCC, do let me know
+* If you would like to perform https requests `OpenSSL` and its development libraries are required.
+
+## Building cpr - Using vcpkg
+
+You can download and install cpr using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+```Bash
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install cpr
+```
+The `cpr` port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
+## Building cpr - Using Conan
+
+You can download and install `cpr` using the [Conan](https://conan.io/) package manager. Setup your CMakeLists.txt (see [Conan documentation](https://docs.conan.io/en/latest/integrations/build_system.html) on how to use MSBuild, Meson and others) like this:
+
+```CMake
+project(myproject CXX)
+
+add_executable(${PROJECT_NAME} main.cpp)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake) # Include Conan-generated file
+conan_basic_setup(TARGETS) # Introduce Conan-generated targets
+
+target_link_libraries(${PROJECT_NAME} CONAN_PKG::cpr)
+```
+Create `conanfile.txt` in your source dir:
+```
+[requires]
+cpr/1.5.0
+
+[generators]
+cmake
+```
+Install and run Conan, then build your project as always:
+
+```Bash
+pip install conan
+mkdir build
+cd build
+conan install ../ --build=missing
+cmake ../
+cmake --build .
+```
+The `cpr` package in Conan is kept up to date by Conan contributors. If the version is out of date, please [create an issue or pull request](https://github.com/conan-io/conan-center-index) on the `conan-center-index` repository.
